@@ -1,3 +1,4 @@
+// Model
 var locations = [
   {location:{lat:18.9220,lng:72.8347},title:'Gateway of India',content: 'The Gateway of India is a monument built during the 20th century in Mumbai(India) that overlooks the Arabian Sea.'},
   {location:{lat:18.9398,lng:72.8355},title:'Chhatrapati Shivaji Terminus railway station',content: 'Chhatrapati Shivaji Terminus, is a historic railway station and a UNESCO World Heritage Site in Mumbai.'},
@@ -11,12 +12,15 @@ var locations = [
   {location:{lat:19.0427179,lng:72.8191316},title:'Bandstand Promenade',content: 'The Bandstand Promenade is a kilometer long walkway along the sea on the west side of Bandra, a suburb of Mumbai, India. It is simultaneously a popular hangout spot, a jogging track and a park.'}
 ];
 
-var markers = [];
+var markers = []; // Global array
+
+// viewModel
 var viewModel = function() {
-  var self = this;
+  var self = this;    // Storing the scope into self
 
-  var bounds = new google.maps.LatLngBounds();
+  var bounds = new google.maps.LatLngBounds();    // bounds varible used for centering the map acc to the markers
 
+// Iterating all items in locations array
   locations.forEach(function(arr){
     var marker = new google.maps.Marker({
       position: arr.location,
@@ -25,92 +29,110 @@ var viewModel = function() {
     });
 
     marker.addListener('click',function() {
-      openInfoWindow(marker);//,infoWindow);
+      self.bounce(marker);    // function for adding animation
+      openInfoWindow(marker);   // function for opening infoWindow
     })
 
-    marker.display = ko.observable(1);
+    marker.display = ko.observable(1);  // knockout observable used to track the location list in the side bar
 
     bounds.extend(marker.position);
 
+    // This gets displayed until the wikipedia api request is returned or error time runs out
     marker.infoWindow = new google.maps.InfoWindow({
       content: arr.content+'<div><strong>Loading...</strong></div>'
     });
 
-    var wikiUrl = wikiUrl1+arr.title+wikiUrl2;
+    var wikiUrl = wikiUrl1+arr.title+wikiUrl2;    // variable for wikipedia api url
+
+    // Timeout for error handling as this is jsonp request
     var wikiError = setTimeout(function(){
-      marker.infoWindow.close();    // To close the loading markers
+      marker.infoWindow.close();    // To close the 'loading...' infoWindow
       marker.infoWindow = new google.maps.InfoWindow({
         content: arr.content+'<div><strong>Wikipedia request failed. Please try later!</strong></div>'
       });
     },8000);
+
+    // Ajax request for wikipedia api
     $.ajax( {
       url: wikiUrl,
       dataType: 'jsonp',
       success: function(data) {
-        var contentUrl = data[3];
-        marker.infoWindow.close();    // To close the loading markers
+        var contentUrl = data[3];   // appropriate info i.e. url array is extracted from the returned object
+        marker.infoWindow.close();    // To close the 'loading...' infoWindow
         marker.infoWindow = new google.maps.InfoWindow({
-          content: arr.content + '<div><a href="'+contentUrl[0]+'">'+contentUrl[0]+'</a></div>'
+          content: arr.content + '<div><a href="'+contentUrl[0]+'">'+contentUrl[0]+'</a></div>'   // first url is used so [0]
         });
-        clearTimeout(wikiError);
+        clearTimeout(wikiError);    // clear setTimeout if ajax request is successful
       }
     });
-    map.fitBounds(bounds);
+    map.fitBounds(bounds);    // boundaries are set to accomodate all the markers on the map
     markers.push(marker);
   });
 
+  // This function is used to animate the markers
+  self.bounce = function(marker) {
+    marker.setAnimation(google.maps.Animation.BOUNCE);
+    setTimeout(function() {
+      marker.setAnimation(null);    // clears the animation after Timeout i.e. 1 sec
+    }, 1000);
+  };
+
+  // This function selects the corresponding markers after the list is selected
   self.active = function() {
     self.noneVisible();
-    this.setVisible(true);
-    this.display(1);
+    self.bounce(this);
+    this.setVisible(true);    // display the marker
+    // this.display(1);
     openInfoWindow(this);
   }
 
+  // This functions opens infoWindow
   var openInfoWindow = function(marker) {
     markers.forEach(function(marker) {
-      marker.infoWindow.close();
+      marker.infoWindow.close();    // Other infoWindows are closed
     });
     marker.infoWindow.open(map,marker);
   }
 
+  // This function reset the map making everything as it was before
   self.allVisible = function() {
     markers.forEach(function(marker) {
-      marker.display(1);
+      marker.display(1);    // The list is displayed
       marker.infoWindow.close();
-      marker.setVisible(true);
-      map.fitBounds(bounds);
+      marker.setVisible(true);    // Markers are displayed
     })
+    map.fitBounds(bounds);
   }
 
+  // This function is used to hide all markers
   self.noneVisible = function() {
     markers.forEach(function(marker) {
       marker.setVisible(false);
     })
   }
 
-  self.filterVal = "";
+  self.filterVal = "";  // This user input is stored in this variable
   // indexOf ref=http://stackoverflow.com/questions/237104/how-do-i-check-if-an-array-includes-an-object-in-javascript
   self.filter = function() {
-    self.flag = 0;
+    self.flag = 0;    // Flag used to identify errors
     markers.forEach(function(marker) {
       marker.infoWindow.close();
-      if(marker.title.toLowerCase().indexOf(self.filterVal.toLowerCase()) > -1) {
+      if(marker.title.toLowerCase().indexOf(self.filterVal.toLowerCase()) > -1) {   // The values are checked
         marker.setVisible(true);
         marker.display(1);
-        self.flag = 1;
+        self.flag = 1;    // flag value is changed to convey no errors
       }else {
         marker.setVisible(false);
         marker.display(0);
-        // alert("No matches found!");
       }
     })
-    if(self.flag===0) {
+    if(self.flag===0) {   // Error handling
       alert("No matches. Try again or hit reset button");
     }
   }
 }
 
-//map
+//map initialization
 var map;
 function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
@@ -119,16 +141,17 @@ function initMap() {
     // disableDefaultUI: true
     mapTypeControl: false   // This option doesn't remove the zoom controls. ref=http://stackoverflow.com/questions/4321606/how-to-remove-a-maptype-from-google-map-using-google-maps-javascript-v3-api
   });
+  // applyBindings is done here so that the viewModel doesn't run before google maps request returns
   ko.applyBindings(new viewModel());    //Reference=https://discussions.udacity.com/t/handling-google-maps-in-async-and-fallback/34282#placing-callback
 }
 
 
 // Sliding Side Bar ref=Responsive web development course
-var button = document.querySelector('.filterBtn-svg');
-var div1 = document.querySelector('.div1');
+var button = document.querySelector('#filterBtn');
+var filterdiv = document.querySelector('.filterdiv');
 
 button.addEventListener('click', function() {
-  div1.classList.toggle('open');
+  filterdiv.classList.toggle('open');
 });
 
 // Resetting the textbox on pressing the reset button.
@@ -140,5 +163,6 @@ reset.addEventListener('click', function() {
   // textbox.setAttribute('placeholder','Type and hit search');
 })
 
+// variables for wikipedia api search
 var wikiUrl1 = "https://en.wikipedia.org/w/api.php?action=opensearch&search=";
-var wikiUrl2 = "&format=json&callback=wikiCallback";
+var wikiUrl2 = "&format=json";
