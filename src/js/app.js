@@ -22,24 +22,28 @@ var viewModel = function() {
       title: arr.title
     });
 
-    marker.infoWindow = new google.maps.InfoWindow({
-      content: arr.content
-    });
-
     marker.addListener('click',function() {
       openInfoWindow(marker);//,infoWindow);
     })
 
     marker.display = ko.observable(1);
 
-    marker.wikiUrl = wikiUrl1+arr.title+wikiUrl1;
+    var wikiUrl = wikiUrl1+arr.title+wikiUrl2;
+    var wikiError = setTimeout(function(){
+      marker.infoWindow = new google.maps.InfoWindow({
+        content: arr.content+'<div><strong>Wikipedia request failed. Please try later!</strong></div>'
+      });
+    },8000);
     $.ajax( {
-      url: marker.wikiUrl,
+      url: wikiUrl,
       dataType: 'jsonp',
       success: function(data) {
-          console.log(data);
+        var contentUrl = data[3];
+        marker.infoWindow = new google.maps.InfoWindow({
+          content: arr.content + '<div><a href="'+contentUrl[0]+'">'+contentUrl[0]+'</a></div>'
+        });
+        clearTimeout(wikiError);
       }
-      // clearTimeout(wikiError);
     });
 
     markers.push(marker);
@@ -122,5 +126,5 @@ reset.addEventListener('click', function() {
 // var wikiError = setTimeout(function(){
 //     $wikiHeader.text("Failed to load wikipedia resources");
 // },8000);
-var wikiUrl1 = "https://en.wikipedia.org/w/api.php?action=opensearch&search=";
-var wikiUrl2 = "&format=json";
+var wikiUrl1 = "https://en.wikipediiiia.org/w/api.php?action=opensearch&search=";
+var wikiUrl2 = "&format=json&callback=wikiCallback";
