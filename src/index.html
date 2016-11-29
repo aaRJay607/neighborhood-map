@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="css/bootstrap.css">
   <link rel="stylesheet" href="css/main.css">
   <script src="js/knockout-3.4.1.js"></script>
-  <title>Landmarks</title>
+  <title>Mumbai Tourism</title>
 
 </head>
 <body>
@@ -19,13 +19,13 @@
           </svg>
       </div>
       <div class="col-xs-11 col-sm-12 col-md-12 col-lg-12">
-        <h1 class="heading">LandMarkFinder</h1>
+        <h1 class="heading">Mumbai Tourism</h1>
       </div>
     </div>
     <div class="row">
       <div class="col-sm-4 col-md-4 col-lg-4 div1">
         <h3>Filter Locations</h3>
-        <input type="text" id="text" data-bind="value: filterVal"><br>
+        <input type="text" id="text" placeholder="Type and hit search" data-bind="value: filterVal"><br>
         <button id="reset" data-bind="click: $root.allVisible">Reset</button>
         <button data-bind="click: $root.filter">Search</button>
         <ul class="formUl" data-bind="foreach: markers">
@@ -38,7 +38,7 @@
     </div>
   </div>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyACaKrlavlPN8Iw7hNxeHRV1oiD9eT0vwg&callback=initMap" async></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyACaKrlavlPN8Iw7hNxeHRV1oiD9eT0vwg&callback=initMap" onerror="alert('Google Maps api request failed. Please try again later. For developers, info in console.');" async></script>
   <script defer src="js/app.js"></script>
 </body>
 </html>
