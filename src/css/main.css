@@ -1,0 +1,60 @@
+#filterBtn {
+  padding: 12px;
+  display: none;
+}
+
+.filterBtn-svg {
+  width: 32px;
+}
+
+#map {
+  /*width: 100%;*/
+  height: 80vh;
+}
+
+@media only screen and (max-width: 767px) {
+  #filterBtn {
+    display: block;
+  }
+  .filterBtn-svg:active {
+    fill:#00f;
+  }
+  .div1 {
+    z-index: 10;
+    position: absolute;
+      /* This trasform moves the drawer off canvas. */
+    -webkit-transform: translate(-300px, 0);
+    transform: translate(-400px, 0);
+      /* Optionally, we animate the drawer. */
+    transition: transform 1s ease;
+    border-right: 1px solid #999;
+    background: #eee;
+  }
+  .open {
+    -webkit-transform: translate(0, 0);
+    transform: translate(0, 0);
+  }
+}
+
+.heading {
+  /*float: right;*/
+  text-align: center;
+}
+
+.div1 {
+  text-align: center;
+  min-width: 200px;
+  overflow: auto;
+}
+
+.formUl {
+  margin-top: 10px;
+  border: 1px solid #666;
+  padding: 0;
+}
+
+.formLi {
+  list-style-type: none;
+  padding: 5px;
+  border-bottom: 1px solid #999
+}
