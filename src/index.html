@@ -25,10 +25,11 @@
     <div class="row">
       <div class="col-sm-4 col-md-4 col-lg-4 div1">
         <h3>Filter Locations</h3>
-        <input type="text"><br>
-        <input type="button" value="Filter">
-        <ul class="formUl" data-bind="foreach: currentArray()">
-          <li class="formLi" data-bind="text: title"></li>
+        <input type="text" id="text" data-bind="value: filterVal"><br>
+        <button id="reset" data-bind="click: $root.allVisible">Reset</button>
+        <button data-bind="click: $root.filter">Search</button>
+        <ul class="formUl" data-bind="foreach: markers">
+          <li class="formLi" data-bind="text: title,visible: display(),click: $parent.active"></li>
         </ul>
       </div>
       <div class="col-xs-12 col-sm-8 col-md-8 col-lg-8 div2">
@@ -36,6 +37,7 @@
       </div>
     </div>
   </div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyACaKrlavlPN8Iw7hNxeHRV1oiD9eT0vwg&callback=initMap" async></script>
   <script defer src="js/app.js"></script>
 </body>

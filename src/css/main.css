@@ -56,5 +56,6 @@
 .formLi {
   list-style-type: none;
   padding: 5px;
-  border-bottom: 1px solid #999
+  border-bottom: 1px solid #999;
+  cursor: pointer;
 }
