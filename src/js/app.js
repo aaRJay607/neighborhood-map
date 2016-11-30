@@ -31,26 +31,18 @@ var viewModel = function() {
     marker.addListener('click',function() {
       self.bounce(marker);    // function for adding animation
       openInfoWindow(marker);   // function for opening infoWindow
-    })
+    });
 
     marker.display = ko.observable(1);  // knockout observable used to track the location list in the side bar
 
     bounds.extend(marker.position);
 
-    // This gets displayed until the wikipedia api request is returned or error time runs out
+    // This gets displayed until the wikipedia api request is returned
     marker.infoWindow = new google.maps.InfoWindow({
       content: arr.content+'<div><strong>Loading...</strong></div>'
     });
 
     var wikiUrl = wikiUrl1+arr.title+wikiUrl2;    // variable for wikipedia api url
-
-    // Timeout for error handling as this is jsonp request
-    var wikiError = setTimeout(function(){
-      marker.infoWindow.close();    // To close the 'loading...' infoWindow
-      marker.infoWindow = new google.maps.InfoWindow({
-        content: arr.content+'<div><strong>Wikipedia request failed. Please try later!</strong></div>'
-      });
-    },8000);
 
     // Ajax request for wikipedia api
     $.ajax( {
@@ -62,19 +54,26 @@ var viewModel = function() {
         marker.infoWindow = new google.maps.InfoWindow({
           content: arr.content + '<div><a href="'+contentUrl[0]+'">'+contentUrl[0]+'</a></div>'   // first url is used so [0]
         });
-        clearTimeout(wikiError);    // clear setTimeout if ajax request is successful
       }
+    }).fail(function(jqXHR, textStatus) {
+      self.wikiError("Wikipedia API request failed! Please try again later. More info: "+jqXHR.status+" "+textStatus);
+        marker.infoWindow.close();    // To close the 'loading...' infoWindow
+        marker.infoWindow = new google.maps.InfoWindow({
+          content: arr.content+'<div><strong>Wikipedia request failed. Please try later!</strong></div>'
+        });
     });
     map.fitBounds(bounds);    // boundaries are set to accomodate all the markers on the map
     markers.push(marker);
   });
 
+  self.wikiError = ko.observable(0);
+
   // This function is used to animate the markers
   self.bounce = function(marker) {
     marker.setAnimation(google.maps.Animation.BOUNCE);
     setTimeout(function() {
-      marker.setAnimation(null);    // clears the animation after Timeout i.e. 1 sec
-    }, 1000);
+      marker.setAnimation(null);    // clears the animation after Timeout i.e. 0.7 sec
+    }, 700);
   };
 
   // This function selects the corresponding markers after the list is selected
@@ -84,7 +83,7 @@ var viewModel = function() {
     this.setVisible(true);    // display the marker
     // this.display(1);
     openInfoWindow(this);
-  }
+  };
 
   // This functions opens infoWindow
   var openInfoWindow = function(marker) {
@@ -92,7 +91,7 @@ var viewModel = function() {
       marker.infoWindow.close();    // Other infoWindows are closed
     });
     marker.infoWindow.open(map,marker);
-  }
+  };
 
   // This function reset the map making everything as it was before
   self.allVisible = function() {
@@ -100,24 +99,25 @@ var viewModel = function() {
       marker.display(1);    // The list is displayed
       marker.infoWindow.close();
       marker.setVisible(true);    // Markers are displayed
-    })
+      self.filterVal("");
+    });
     map.fitBounds(bounds);
-  }
+  };
 
   // This function is used to hide all markers
   self.noneVisible = function() {
     markers.forEach(function(marker) {
       marker.setVisible(false);
-    })
-  }
+    });
+  };
 
-  self.filterVal = "";  // This user input is stored in this variable
+  self.filterVal = ko.observable("");  // This user input is stored in this variable
   // indexOf ref=http://stackoverflow.com/questions/237104/how-do-i-check-if-an-array-includes-an-object-in-javascript
   self.filter = function() {
     self.flag = 0;    // Flag used to identify errors
     markers.forEach(function(marker) {
       marker.infoWindow.close();
-      if(marker.title.toLowerCase().indexOf(self.filterVal.toLowerCase()) > -1) {   // The values are checked
+      if(marker.title.toLowerCase().indexOf(self.filterVal().toLowerCase()) > -1) {   // The values are checked
         marker.setVisible(true);
         marker.display(1);
         self.flag = 1;    // flag value is changed to convey no errors
@@ -125,12 +125,23 @@ var viewModel = function() {
         marker.setVisible(false);
         marker.display(0);
       }
-    })
+    });
     if(self.flag===0) {   // Error handling
       alert("No matches. Try again or hit reset button");
     }
-  }
-}
+  };
+
+  self.openVar = ko.observable(0);
+// This function is used to change the value of the variable responsible for displaying side menu
+  self.isOpen = function() {
+    self.openVar(!self.openVar());
+  };
+
+// This function is called when the browser window is resized.
+  window.onresize = function() {
+    map.fitBounds(bounds); // `bounds` is a `LatLngBounds` object
+  };
+};
 
 //map initialization
 var map;
@@ -145,7 +156,11 @@ function initMap() {
   ko.applyBindings(new viewModel());    //Reference=https://discussions.udacity.com/t/handling-google-maps-in-async-and-fallback/34282#placing-callback
 }
 
+// variables for wikipedia api search
+var wikiUrl1 = "https://en.wikipedia.org/w/api.php?action=opensearch&search=";
+var wikiUrl2 = "&format=json";
 
+/*
 // Sliding Side Bar ref=Responsive web development course
 var button = document.querySelector('#filterBtn');
 var filterdiv = document.querySelector('.filterdiv');
@@ -162,7 +177,4 @@ reset.addEventListener('click', function() {
   textbox.value = "";
   // textbox.setAttribute('placeholder','Type and hit search');
 })
-
-// variables for wikipedia api search
-var wikiUrl1 = "https://en.wikipedia.org/w/api.php?action=opensearch&search=";
-var wikiUrl2 = "&format=json";
+*/
