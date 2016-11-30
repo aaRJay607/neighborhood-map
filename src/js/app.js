@@ -159,22 +159,3 @@ function initMap() {
 // variables for wikipedia api search
 var wikiUrl1 = "https://en.wikipedia.org/w/api.php?action=opensearch&search=";
 var wikiUrl2 = "&format=json";
-
-/*
-// Sliding Side Bar ref=Responsive web development course
-var button = document.querySelector('#filterBtn');
-var filterdiv = document.querySelector('.filterdiv');
-
-button.addEventListener('click', function() {
-  filterdiv.classList.toggle('open');
-});
-
-// Resetting the textbox on pressing the reset button.
-var textbox = document.getElementById('text');
-var reset = document.querySelector('#reset');
-
-reset.addEventListener('click', function() {
-  textbox.value = "";
-  // textbox.setAttribute('placeholder','Type and hit search');
-})
-*/
